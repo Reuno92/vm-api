@@ -1,8 +1,11 @@
-import express from 'express';
+import express, {Request, Response} from 'express';
 import cors from 'cors';
 import IndexRoutes from "./routes";
-import * as http from "http";
+import http from "http";
 import {existsSync, mkdirSync} from "fs";
+import bodyParser from "body-parser";
+import HttpException from "./models/HttpException";
+import errorMiddleware from "./middleware/errors.middleware";
 
 export class Application {
     public app : express.Application = express();
@@ -21,11 +24,14 @@ export class Application {
         this.generalConfig();
         this.routesConfig();
         this.localStorageFoldersConfig();
+        this.errorManagement();
         this.init();
     }
 
     private generalConfig() {
         this.app.use(cors(this.corsOptions));
+        this.app.use(bodyParser.json());
+        this.app.use(bodyParser.urlencoded({ extended: false }));
     }
 
     private routesConfig() {
@@ -39,6 +45,12 @@ export class Application {
             }
         });
     };
+
+    private errorManagement() {
+        this.app.use( (err: HttpException, req: Request, res: Response) => {
+            return errorMiddleware(err, req, res);
+        });
+    }
 
     private init() {
         http.createServer(this.app)
