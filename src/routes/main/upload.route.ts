@@ -4,6 +4,7 @@ import HttpException from "../../models/HttpException";
 import httpException from "../../models/HttpException";
 import ffmpeg, {FfprobeData} from 'fluent-ffmpeg';
 import {join} from "path";
+import {TranscodingController} from "../../controllers/transcoding.controller";
 
 class UploadRoute {
     public routes = Router({
@@ -33,30 +34,16 @@ class UploadRoute {
                 if (!req?.file) {
                     throw new HttpException(400,'FILE_MISSING');
                 } else {
-                    new Promise( (resolve, reject) => {
-                        ffmpeg(join(`${__dirname}/../../../uploads/${req?.file?.filename}`))
-                            .videoCodec('libx264')
-                            .videoBitrate('1000k', true)
-                            .fps(25)
-                            .audioCodec('aac')
-                            //.outputOption('-flags:v+ildct')
-                            .on('error', (err: any) => reject(err))
-                            /*
-                            .on('progress', (progress) => {
-                                res.write(JSON.stringify(progress, null, 2));
-                            })
-                             */
-                            .save(join(`${__dirname}/../../../uploads/lowres/${req?.file?.filename}`))
-                            .on('end', () => resolve('ENCODED_FILE_SUCCESSFULLY') );
-                    }).then( (data: any) =>
-                        res.status(200).json({
+                    new TranscodingController().transcodingUploadFileLowRes(req?.file.filename)
+                        .then( (data: any) =>
+                            res.status(200).json({
                             status: data
                         })
-                    ).catch( (err: any) => {
-                        res.status(400).json({
+                        ).catch( (err: any) => {
+                            res.status(400).json({
                             error: err
                         })
-                    });
+                        });
                 }
             } catch (err: any) {
                 res.status(400)
