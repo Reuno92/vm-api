@@ -1,7 +1,7 @@
 import multer, {diskStorage, DiskStorageOptions} from 'multer';
-import fs from "fs";
-import {Request} from "express";
-import HttpException from "../models/HttpException";
+import fs from 'fs';
+import {Request} from 'express';
+import HttpException from '../models/HttpException';
 
 class UploadsMiddleware {
     private storageOptions: DiskStorageOptions;
@@ -35,7 +35,7 @@ class UploadsMiddleware {
                     callback(null, true);
                 } else {
                     callback(null, false);
-                    return callback(new Error("WRONG_FILE_TYPE"));
+                    return callback(new HttpException(400, "WRONG_FILE_TYPE"));
                 }
             }
         });

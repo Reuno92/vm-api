@@ -1,11 +1,11 @@
-import express, {Request, Response} from 'express';
+import express, {NextFunction, Request, Response} from 'express';
 import cors from 'cors';
-import IndexRoutes from "./routes";
-import http from "http";
-import {existsSync, mkdirSync} from "fs";
-import bodyParser from "body-parser";
-import HttpException from "./models/HttpException";
-import errorMiddleware from "./middleware/errors.middleware";
+import IndexRoutes from './routes';
+import http from 'http';
+import {existsSync, mkdirSync} from 'fs';
+import bodyParser from 'body-parser';
+import HttpException from './models/HttpException';
+import errorMiddleware from './middleware/errors.middleware';
 
 export class Application {
     public app : express.Application = express();
@@ -47,15 +47,15 @@ export class Application {
     };
 
     private errorManagement() {
-        this.app.use( (err: HttpException, req: Request, res: Response) => {
-            return errorMiddleware(err, req, res);
+        this.app.use( (err: HttpException, req: Request, res: Response, next: NextFunction) => {
+            return errorMiddleware(err, req, res, next);
         });
     }
 
     private init() {
         http.createServer(this.app)
             .listen(this.PORT)
-            .on("listening", () => console.log('Server is running on %s:%d', this.HOSTNAME, this.PORT))
+            .on('listening', () => console.log('Server is running on %s:%d', this.HOSTNAME, this.PORT))
     }
 }
 
