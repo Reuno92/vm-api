@@ -1,5 +1,6 @@
 import {Router} from "express";
 import mainRoutes from './main/upload.route';
+import storageRoutes from './main/files.route';
 
 export class IndexRoutes {
     public routes: Router = Router({
@@ -8,6 +9,7 @@ export class IndexRoutes {
 
     constructor() {
         this.routes.use("/uploads", mainRoutes);
+        this.routes.use("/files", storageRoutes);
     }
 
 }
