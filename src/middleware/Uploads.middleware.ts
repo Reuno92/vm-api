@@ -17,8 +17,8 @@ class UploadsMiddleware {
                 cb(null, path);
             },
             filename: (req, file, cb) => {
-                if (!fs.existsSync(`uploads/${file.originalname}`)) {
-                    cb(null, `${file.originalname}` )
+                if (!fs.existsSync(`${path}/${file.originalname}`)) {
+                    cb(null, `${file.originalname}` );
                 } else {
                     cb(new HttpException(400, "FILE_ALREADY_EXIST"), `${file.originalname}`);
                 }
