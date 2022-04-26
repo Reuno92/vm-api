@@ -32,7 +32,7 @@ The back-end application wil use Typescript and ExpressJS and will have 2 REST r
 |:----------------------|---------------------------------------------------------|
 | src                   | Source file                                             | 
 | src/**abstraction**   | Abstract Classes and interfaces                         |
-| src/**Controllers**   | Rest API Components and controllers                     | 
+| src/**controllers**   | Rest API Components and controllers                     | 
 | src/**environments**  | Application environments handling utility               | 
 | src/**routes**        | REST API Routes                                         |
 | src/**lib**           | Reusable utilises and library source code like a logger |
