@@ -56,8 +56,6 @@ class FilesRoute {
                 .setHeader("Content-Length", CONTENT_LENGTH)
                 .setHeader("Content-Type", MIME ? MIME : 'video/mp4');
 
-            console.log(RANGE);
-
             const VIDEO_STREAM = createReadStream(PATH, {start: START, end: END});
             VIDEO_STREAM.pipe(res);
         });
