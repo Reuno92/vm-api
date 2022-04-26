@@ -1,7 +1,8 @@
 import {Request, Response, Router} from "express";
-import {createReadStream, readdir, statSync} from "fs";
+import {createReadStream, readdir, ReadStream, statSync} from "fs";
 import {lookup} from "mime-types";
 import {extname, join} from "path";
+import HttpException from "../../models/HttpException";
 
 class FilesRoute {
     public routes = Router({
@@ -35,29 +36,37 @@ class FilesRoute {
     private getOneLowRes() {
         this.routes.get('/onelowres', (req: Request, res: Response) => {
             const query = req?.query?.file;
-
             const RANGE = req?.headers?.range;
 
             if (!RANGE) {
-                res.status(400).send('Requires Range header')
+                res.status(416).json({ error: 'Requires Range header'})
+            } else {
+                /* FILE CONSTANT */
+                const PATH: string = join(`${__dirname}/../../../uploads/lowres/${query}`);
+                const MIME = lookup(extname(PATH));
+                const SIZE = statSync(PATH).size;
+
+                /* REQUEST RANGE */
+                const POSITION: Array<string> = RANGE?.replace(/bytes=/, "").split("-")
+
+                /* PREPARE FILE */
+                const START = Number(POSITION[0]);
+                const END = POSITION[1] ? Number(POSITION[1]) : SIZE - 1;
+                const CHUNK_SIZE = (END - START) + 1;
+
+                res.status(206)
+                    .setHeader("Content-Range", `bytes ${START}-${END}/${SIZE}`)
+                    .setHeader("Accept-Ranges", 'bytes')
+                    .setHeader("Content-Length", CHUNK_SIZE)
+                    .setHeader("Content-Type", MIME ? MIME : 'video/mp4');
+
+                const VIDEO_STREAM: ReadStream = createReadStream(PATH, {start: START, end: END})
+                    .on('open', () =>
+                        VIDEO_STREAM.pipe(res))
+                    .on('error', (err: Error) =>
+                        res?.end(err, () => new HttpException(500, "ERROR_ON_DOWNLOAD"))
+                    );
             }
-
-            const PATH: string = join(`${__dirname}/../../../uploads/lowres/${query}`);
-            const MIME = lookup(extname(PATH));
-            const SIZE = statSync(PATH).size;
-            const CHUNK_SIZE = 1000000;
-            const START = Number(RANGE?.replace(/\D/g, ""));
-            const END = Math.min(START + CHUNK_SIZE, SIZE - 1);
-            const CONTENT_LENGTH = END - START + 1;
-
-            res.status(206)
-                .setHeader("Content-Range", `bytes ${START}-${END}/${SIZE}`)
-                .setHeader("Accept-Ranges", 'bytes')
-                .setHeader("Content-Length", CONTENT_LENGTH)
-                .setHeader("Content-Type", MIME ? MIME : 'video/mp4');
-
-            const VIDEO_STREAM = createReadStream(PATH, {start: START, end: END});
-            VIDEO_STREAM.pipe(res);
         });
     }
 }
