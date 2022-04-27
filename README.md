@@ -94,6 +94,6 @@ yarn start dev
 ```
 
 ### Still To Be Done
- * Delete files when transcode is effective.
- * Find a way to stream a file to route.
+ * ~~Delete files when transcode is effective~~.
+ * ~~Find a way to stream a file to route~~.
 
