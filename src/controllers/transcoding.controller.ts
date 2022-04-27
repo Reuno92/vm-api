@@ -1,5 +1,6 @@
 import ffmpeg from "fluent-ffmpeg";
 import {join} from "path";
+import {unlink} from "fs";
 
 export class TranscodingController {
 
@@ -17,14 +18,24 @@ export class TranscodingController {
                 .fps(25)
                 .audioCodec('aac')
                 //.outputOption('-flags:v+ildct')
-                .on('error', (err: any) => reject(err))
+                .on('error', (err: any) => {
+                    unlink(join(`${__dirname}/../../uploads/${filename}`), (err: any) => {
+                        return reject(err);
+                    });
+                    return reject(err)
+                })
                 /*
                 .on('progress', (progress) => {
                     res.write(JSON.stringify(progress, null, 2));
                 })
                  */
                 .save(join(`${__dirname}/../../uploads/lowres/${filename}`))
-                .on('end', () => resolve('ENCODED_FILE_SUCCESSFULLY') )
+                .on('end', () => {
+                    unlink(join(`${__dirname}/../../uploads/${filename}`), (err: any) => {
+                        return reject(err);
+                    });
+                    return resolve('ENCODED_FILE_SUCCESSFULLY')
+                })
         })
     };
 }

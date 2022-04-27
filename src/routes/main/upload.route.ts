@@ -2,6 +2,9 @@ import {Request, Response, Router} from 'express';
 import UploadsMiddleware from '../../middleware/Uploads.middleware';
 import HttpException from '../../models/HttpException';
 import {TranscodingController} from '../../controllers/transcoding.controller';
+import {join} from "path";
+import {existsSync} from "fs";
+
 
 class UploadRoute {
     public routes = Router({
@@ -31,12 +34,18 @@ class UploadRoute {
                     throw new HttpException(400,'FILE_MISSING');
                 }
 
-                new TranscodingController().transcodingUploadFileLowRes(req?.file.filename)
-                    .then( (data: any) =>
-                        res.status(200).json({
-                        status: data
+                if (existsSync(join(`${__dirname}/../../../uploads/lowres/${req?.file?.filename}`))) {
+                    throw new HttpException(409, 'FILE_ALREADY_EXIST');
+                }
+
+                new TranscodingController().transcodingUploadFileLowRes(req?.file?.filename)
+                    .then( (data: any) => {
+                            //
+                            res.status(200).json({
+                                status: data
+                            });
                     })
-                    ).catch( (err: any) => {
+                    .catch( (err: any) => {
                         res.status(400).json({
                         error: err
                     })
